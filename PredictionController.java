@@ -40,7 +40,7 @@ public class PredictionController {
 		String csvFilePath = "C:/Users/Dhrumil/OneDrive/Desktop/us.csv";
         String url = "https://www.faa.gov/air_traffic/publications/atpubs/cnt_html/appendix_a.html";
         HashMap<String, String> abb = new HashMap<>();
-        String disaster[] = new String[6];
+        String disaster[] = new String[7];
         State st[] = new State[59];
         try {
             Document document = Jsoup.connect(url).get();
@@ -74,6 +74,10 @@ public class PredictionController {
             		String activity = nextLine[7].trim();
             		String date = nextLine[12].substring(0, nextLine[12].indexOf('T'));
             		String put = "";
+            		if(activity.contains("Snow")) {
+            			put = "Snowstorm";
+            			fill(map, put, date, state, dates, list);
+            		}
             		if(activity.contains("Tornado")) {
             			put = "Tornado";
             			fill(map, put, date, state, dates, list);
@@ -135,8 +139,8 @@ public class PredictionController {
 			e.printStackTrace();
 		}
         
-        double chance[][] = new double[59][7];
-        String probs[][] = new String[56][7];
+        double chance[][] = new double[59][8];
+        String probs[][] = new String[56][8];
         int ind = 0;
         PriorityQueue<double[]> queue = queue();
         for(int i=0;i<59;i++) {
@@ -145,7 +149,7 @@ public class PredictionController {
         	String name = abb.get(st[i].name);
         	chance[i][0] = ind;
         	double max = 0.0;
-        	for(int j=0;j<6;j++) {
+        	for(int j=0;j<7;j++) {
         		chance[i][j+1] = 0.0D;
         		double occurences = st[i].intervals[j].size() + 1;
         		String last = st[i].last[j];
@@ -182,8 +186,8 @@ public class PredictionController {
         	DecimalFormat decimal = new DecimalFormat("#.##");
         	if(abb.containsKey(st[(int)chance[ind][0]].name)) {
         		probs[index][0] = abb.get(st[(int)chance[ind][0]].name);
-            	for(int j=0;j<6;j++) probs[index][j+1] = decimal.format(chance[ind][j+1]);
-            	for(int j=0;j<6;j++) System.out.print(probs[index][j+1] + " ");
+            	for(int j=0;j<7;j++) probs[index][j+1] = decimal.format(chance[ind][j+1]);
+            	for(int j=0;j<7;j++) System.out.print(probs[index][j+1] + " ");
             	index++;
             	System.out.println();
         	}
@@ -256,9 +260,9 @@ public class PredictionController {
 		
 		State(String name){
 			this.name = name;
-			intervals = new ArrayList[6];
-			for(int i=0;i<6;i++) intervals[i] = new ArrayList<>();
-			last = new String[6];
+			intervals = new ArrayList[7];
+			for(int i=0;i<7;i++) intervals[i] = new ArrayList<>();
+			last = new String[7];
 		}
 	}
 	
