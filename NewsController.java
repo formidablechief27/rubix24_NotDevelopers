@@ -1,8 +1,14 @@
 package com.example.disaster;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -77,6 +83,64 @@ public class NewsController {
         	System.out.println(sentences.get(rankedSentences[i]).toString());
             summary.append(sentences.get(rankedSentences[i]).toString()).append(" ");
         }
+        String name = "";
+        String date = "";
+        String temp = "";
+        String prec = "";
+        String hum = "";
+        String spd = "";
+       
+        String URL = "https://api.weatherbit.io/v2.0/current?lat=35.46&lon=-97.51&key=d06b86a6f1b64ba38830ff9b384bbf95";
+        HttpURLConnection connection;
+		try {
+			connection = (HttpURLConnection) new URL(URL).openConnection();
+			connection.setRequestMethod("GET");
+			int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) response.append(inputLine);
+
+                in.close();
+
+                // Process the JSON response and add markers for each hospital
+                String jsonResponse = response.toString();
+                System.out.println(jsonResponse);
+                int ind1 = jsonResponse.indexOf("city_name");
+                int ind2 = jsonResponse.indexOf(",", ind1);
+                name = jsonResponse.substring(ind1 + 12, ind2-1);
+                int ind3 = jsonResponse.lastIndexOf("temp");
+                int ind4 = jsonResponse.indexOf(",", ind3);
+                temp = jsonResponse.substring(ind3 + 6, ind4);
+                int ind5 = jsonResponse.indexOf("precip");
+                int ind6 = jsonResponse.indexOf(",", ind5);
+                prec = jsonResponse.substring(ind5 + 8, ind6);
+                int ind7 = jsonResponse.indexOf("rh");
+                int ind8 = jsonResponse.indexOf(",", ind7);
+                hum = jsonResponse.substring(ind7 + 4, ind8);
+                int ind9 = jsonResponse.indexOf("spd");
+                spd = jsonResponse.substring(ind9 + 5, ind9 + 9);
+                
+            } else {
+                System.out.println("Error: " + responseCode);
+            }
+
+            connection.disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+		prec += "%";
+		hum += "%";
+		spd += " m/s";
+		model.addAttribute("spd", spd);
+		model.addAttribute("hum", hum);
+		model.addAttribute("prec", prec);
+        model.addAttribute("name", name);
+        model.addAttribute("temp", temp);
         model.addAttribute("list", lines);
 		return "social.html";
 	}
